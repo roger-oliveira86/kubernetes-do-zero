@@ -2,10 +2,6 @@ name: Validate Kubernetes manifests
 
 on:
   pull_request:
-    paths:
-      - '**/*.yaml'
-      - '**/*.yml'
-      - '.github/workflows/validate-manifests.yml'
   workflow_dispatch:
 
 permissions:
