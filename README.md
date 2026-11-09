@@ -45,6 +45,11 @@ That's why this track starts with the operating system and only then climbs to t
 
 Full track index: [Linux for Platform Engineering](./00-linux-for-platform-engineering/README.md).
 
+### Kubernetes labs
+
+- [First commands with kubectl](./00-first-steps/lab-01-first-commands/README.md) — inspect a cluster, create a Pod, and check its events and logs.
+- [Deployment, Service, rollout and rollback](./01-fundamentals-and-workloads/lab-01-deployment-and-rollout/README.md) — expose an application, diagnose a stalled rollout, and recover.
+
 ### Essays — platform decisions
 
 | Essay | Topic |
@@ -58,7 +63,7 @@ The essays use sanitized examples: no real system, data or incident is identifia
 
 ## In progress
 
-The Kubernetes modules (workloads, cluster architecture, networking, storage and troubleshooting) are being written one at a time, always with a reproducible lab. The plan and order live in the [ROADMAP](./ROADMAP.md); the starting point is [First steps](./00-first-steps/README.md).
+The workloads module is in progress. Cluster architecture, services and networking, storage, and troubleshooting are planned. See the [roadmap](./ROADMAP.md) for module status and [First steps](./00-first-steps/README.md) for the introduction.
 
 ## How to study
 

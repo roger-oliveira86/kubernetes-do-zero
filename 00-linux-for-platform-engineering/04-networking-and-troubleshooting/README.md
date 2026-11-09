@@ -1,7 +1,7 @@
 # 04 — Networking and Troubleshooting
 
 > Part of the **Linux From Scratch** track (piece #3: *Networking, DNS, ports and sockets*).
-> Full articles: [Medium](https://medium.com/@rogeroliveira86/linux-do-zero-515b4c682a91) · [DEV.to](https://dev.to/rogeroliveira86/linux-from-zero-networking-dns-ports-and-sockets-for-platform-engineers-240h)
+> Full article on [DEV.to](https://dev.to/rogeroliveira86/linux-from-zero-networking-dns-ports-and-sockets-for-platform-engineers-240h)
 
 ## Objective
 
@@ -13,12 +13,10 @@ Prerequisite: basic terminal and permissions (pieces #1 and #2 of this track).
 
 ```text
 04-networking-and-troubleshooting/
-├── README.md                  # this file
-├── 01-interfaces-e-rotas.md   # ip a, ip route
-├── 02-dns.md                  # dig, resolvectl, /etc/resolv.conf
-├── 03-portas-e-sockets.md     # ss, LISTEN vs ESTABLISHED
-└── 04-checklist-troubleshooting.md
+└── README.md
 ```
+
+The exercises and troubleshooting checklist are in this guide.
 
 ## 1. Interfaces and routes
 

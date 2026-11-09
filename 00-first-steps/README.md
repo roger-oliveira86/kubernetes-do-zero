@@ -17,4 +17,4 @@ By the end of this module, you should be able to explain:
 
 ## Next step
 
-The first lab will run in a browser environment and will introduce the basic cluster inspection commands.
+Start with [First commands with kubectl](./lab-01-first-commands/README.md). You can run it in a disposable browser playground to inspect a cluster, create a Pod, and read its logs.
