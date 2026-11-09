@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-readiness
+data:
+  status: ready
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: web-demo
+type: Opaque
+stringData:
+  demo-token: fictional-lab-token
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workload-config-web
+  template:
+    metadata:
+      labels:
+        app: workload-config-web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: DEMO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: web-demo
+                  key: demo-token
+          volumeMounts:
+            - name: readiness
+              mountPath: /etc/lab-readiness
+              readOnly: true
+          readinessProbe:
+            exec:
+              command: [grep, -qx, ready, /etc/lab-readiness/status]
+            periodSeconds: 3
+            failureThreshold: 2
+      volumes:
+        - name: readiness
+          configMap:
+            name: web-readiness
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: workload-config-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
