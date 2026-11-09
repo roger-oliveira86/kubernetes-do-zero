@@ -55,6 +55,8 @@ If the context or version isn't what you expect, stop. The first step of good op
 | `deployment.yaml` | declares three replicas, the update strategy and a readiness probe |
 | `service.yaml` | provides a stable address for the selected Pods |
 
+The Deployment pins NGINX to a multi-architecture OCI digest so the lab pulls the same image for a given platform even if the tag moves. The tag identifies the NGINX release.
+
 ## 1. Create the initial version
 
 ```bash
