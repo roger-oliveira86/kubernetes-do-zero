@@ -1,0 +1,58 @@
+# Lab 02 — Workload configuration and readiness
+
+Use a ConfigMap to control readiness and a fictional Secret to supply an environment variable. Observe why a running Pod can become unavailable through a Service, then restore readiness without replacing the Pod.
+
+This lab practices configuration of workloads and troubleshooting with Pod conditions, events, and EndpointSlices. It covers parts of the CKA Workloads & Scheduling and Troubleshooting domains.
+
+## Environment
+
+Open the [Killercoda Kubernetes playground](https://killercoda.com/playgrounds/scenario/kubernetes). Use only a disposable cluster with permission to create namespaces. Run the commands from this lab directory in the repository checkout. The Secret contains a fictional value for this exercise. Kubernetes Secret manifests can expose their values to anyone who can read the file.
+
+## 1. Establish a healthy baseline
+
+```bash
+kubectl config current-context
+kubectl cluster-info
+```
+
+Confirm that the context belongs to the playground. Then run:
+
+```bash
+kubectl create namespace lab-workload-config
+kubectl -n lab-workload-config apply -f workload.yaml
+kubectl -n lab-workload-config rollout status deployment/web --timeout=180s
+kubectl -n lab-workload-config get pods -l app=workload-config-web
+kubectl -n lab-workload-config get endpointslices -l kubernetes.io/service-name=web -o jsonpath='{.items[*].endpoints[*].conditions.ready}{"\n"}'
+kubectl -n lab-workload-config exec deployment/web -- sh -c 'test -n "$DEMO_TOKEN"' && echo 'Fictional Secret is available'
+```
+
+Expect one Ready Pod, a ready endpoint, and confirmation that the environment variable exists without displaying its value.
+
+## 2. Break readiness
+
+```bash
+kubectl -n lab-workload-config patch configmap web-readiness --type=merge -p '{"data":{"status":"blocked"}}'
+kubectl -n lab-workload-config wait --for=condition=Ready=false pod -l app=workload-config-web --timeout=180s
+kubectl -n lab-workload-config get pods -l app=workload-config-web
+kubectl -n lab-workload-config describe pod -l app=workload-config-web
+kubectl -n lab-workload-config get endpointslices -l kubernetes.io/service-name=web -o jsonpath='{.items[*].endpoints[*].conditions.ready}{"\n"}'
+```
+
+The mounted file updates asynchronously. Expect the Pod to remain Running with readiness at `0/1`, a failed probe event, and no ready Service endpoint. EndpointSlice updates can lag behind the Pod condition. Record the Pod name and restart count.
+
+## 3. Restore readiness
+
+```bash
+kubectl -n lab-workload-config patch configmap web-readiness --type=merge -p '{"data":{"status":"ready"}}'
+kubectl -n lab-workload-config wait --for=condition=Ready pod -l app=workload-config-web --timeout=180s
+kubectl -n lab-workload-config get pods -l app=workload-config-web
+kubectl -n lab-workload-config get endpointslices -l kubernetes.io/service-name=web -o jsonpath='{.items[*].endpoints[*].conditions.ready}{"\n"}'
+```
+
+Confirm that the same Pod is Ready, the restart count did not increase, and the endpoint is ready again. Record the Kubernetes version and the outputs for the healthy, failed, and recovered states.
+
+## 4. Clean up
+
+```bash
+kubectl delete namespace lab-workload-config --wait=true --timeout=120s
+```
