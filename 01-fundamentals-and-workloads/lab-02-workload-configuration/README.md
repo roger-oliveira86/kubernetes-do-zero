@@ -8,10 +8,10 @@ This lab practices configuration of workloads and troubleshooting with Pod condi
 
 Open the [Killercoda Kubernetes playground](https://killercoda.com/playgrounds/scenario/kubernetes). Use only a disposable cluster with permission to create namespaces. The Secret contains a fictional value for this exercise. Kubernetes Secret manifests can expose their values to anyone who can read the file.
 
-In the playground terminal, clone the review branch and enter the lab directory:
+In the playground terminal, clone the repository and enter the lab directory:
 
 ```bash
-git clone --branch lab/k8s-008-workload-config --single-branch https://github.com/roger-oliveira86/kubernetes-from-scratch.git
+git clone https://github.com/roger-oliveira86/kubernetes-from-scratch.git
 cd kubernetes-from-scratch/01-fundamentals-and-workloads/lab-02-workload-configuration
 test -f workload.yaml
 git rev-parse HEAD
