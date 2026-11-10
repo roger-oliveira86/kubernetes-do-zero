@@ -50,7 +50,7 @@ This track is built alongside CKA preparation and university work, one module at
 | --- | --- |
 | 00 — First steps | Published |
 | 00 — Linux for Platform Engineering (5 chapters) | Published |
-| 01 — Fundamentals and workloads | In progress — [Lab 01: Deployment, Service, rollout and rollback](./01-fundamentals-and-workloads/lab-01-deployment-and-rollout/README.md) published |
+| 01 — Fundamentals and workloads | In progress — [Lab 01: Deployment, Service, rollout and rollback](./01-fundamentals-and-workloads/lab-01-deployment-and-rollout/README.md) and [Lab 02: Workload configuration and readiness](./01-fundamentals-and-workloads/lab-02-workload-configuration/README.md) published |
 | 02 — Cluster architecture | Planned |
 | 03 — Services and networking | Planned |
 | 04 — Storage | Planned |

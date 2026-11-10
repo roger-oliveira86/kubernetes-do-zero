@@ -49,6 +49,7 @@ Full track index: [Linux for Platform Engineering](./00-linux-for-platform-engin
 
 - [First commands with kubectl](./00-first-steps/lab-01-first-commands/README.md) — inspect a cluster, create a Pod, and check its events and logs.
 - [Deployment, Service, rollout and rollback](./01-fundamentals-and-workloads/lab-01-deployment-and-rollout/README.md) — expose an application, diagnose a stalled rollout, and recover.
+- [Workload configuration and readiness](./01-fundamentals-and-workloads/lab-02-workload-configuration/README.md) — configure a workload with a ConfigMap and a fictional Secret, observe how a readiness failure affects availability through the Service, and recover without restarting the Pod.
 
 ### Essays — platform decisions
 
