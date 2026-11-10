@@ -21,31 +21,26 @@ By the end, you'll be able to:
 - permission to create a namespace, Deployment and Service;
 - a terminal open in this folder.
 
-To avoid mixing the exercise with real resources, check your context before starting:
-
-```bash
-kubectl config current-context
-kubectl cluster-info
-```
-
 ## Where to run it
 
-Pick exactly one disposable environment. This lab **must not** be run against a work or production cluster.
+Pick one disposable environment. Before provisioning locally, inspect your current context with `kubectl config current-context` and list the existing clusters or profiles using the command below. A missing current context is expected on a fresh setup.
 
-| Option | When to use it | Start and cleanup |
+| Option | Check before creation | Create and verify |
 | --- | --- | --- |
-| [Killercoda Kubernetes Playground](https://killercoda.com/playgrounds/scenario/kubernetes) | Best option to get started: runs in the browser, no local install needed. | Open the playground, run the commands in this guide, end the session when done. |
-| [kind](https://kind.sigs.k8s.io/) | To repeat the scenario locally with Docker, Podman or nerdctl. | `kind create cluster --name kubernetes-from-scratch`, and at the end `kind delete cluster --name kubernetes-from-scratch`. |
-| [minikube](https://minikube.sigs.k8s.io/docs/start/) | For anyone already using a guided local cluster. | `minikube start`, and at the end `minikube delete`. |
+| [Killercoda Kubernetes Playground](https://killercoda.com/playgrounds/scenario/kubernetes) | Open a fresh playground session. | Use the context provided by that session. |
+| [kind](https://kind.sigs.k8s.io/) | Run `kind get clusters`. Stop if `kubernetes-from-scratch` already exists. | Run `kind create cluster --name kubernetes-from-scratch`. Expect context `kind-kubernetes-from-scratch`. |
+| [minikube](https://minikube.sigs.k8s.io/docs/start/) | Run `minikube profile list`. Stop if `kfs-lab-rollout` already exists, even if stopped. | Run `minikube start -p kfs-lab-rollout`, then `minikube status -p kfs-lab-rollout`. Expect context `kfs-lab-rollout`. |
 
-Before applying any file, record the version and context you're using. This lets you compare results without turning a command into a blind recipe:
+If you cannot check the inventory, stop. Use a fresh environment and leave existing clusters and profiles alone. After creation, check the context, server and version:
 
 ```bash
-kubectl version
 kubectl config current-context
+LAB_CONTEXT="$(kubectl config current-context)"
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" cluster-info
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" version
 ```
 
-If the context or version isn't what you expect, stop. The first step of good operations is validating where the change will happen.
+Confirm the context and API server match the environment you just created. Stop if either is unexpected. Run the remaining commands in this shell. If you open another terminal, repeat context verification there before using it for lab commands.
 
 ## Files
 
@@ -60,12 +55,17 @@ The Deployment pins NGINX to a multi-architecture OCI digest so the lab pulls th
 ## 1. Create the initial version
 
 ```bash
-kubectl apply -f namespace.yaml
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" create -f namespace.yaml
+```
 
-kubectl -n lab-rollout rollout status deployment/web
-kubectl -n lab-rollout get deployment,rs,pods,service
+Continue only after namespace creation succeeds. If it already exists, stop and use a fresh environment.
+
+```bash
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout apply -f deployment.yaml
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout apply -f service.yaml
+
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout rollout status deployment/web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout get deployment,rs,pods,service
 ```
 
 Expected result: the Deployment reports `successfully rolled out`, three Pods are ready, and the `web` Service has endpoints.
@@ -73,13 +73,13 @@ Expected result: the Deployment reports `successfully rolled out`, three Pods ar
 Check the endpoints:
 
 ```bash
-kubectl -n lab-rollout get endpointslices -l kubernetes.io/service-name=web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout get endpointslices -l kubernetes.io/service-name=web
 ```
 
 Optionally, in another terminal, forward a local port to the Service:
 
 ```bash
-kubectl -n lab-rollout port-forward service/web 8080:80
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout port-forward service/web 8080:80
 ```
 
 Then access `http://localhost:8080` in your browser or with:
@@ -93,10 +93,10 @@ curl -I http://localhost:8080
 Change an environment variable in the Pod template. The NGINX application doesn't use this variable; it exists to demonstrate a declarative change that creates a new revision without depending on a specific image tag.
 
 ```bash
-kubectl -n lab-rollout set env deployment/web RELEASE_MESSAGE=v2
-kubectl -n lab-rollout rollout status deployment/web
-kubectl -n lab-rollout rollout history deployment/web
-kubectl -n lab-rollout get rs
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout set env deployment/web RELEASE_MESSAGE=v2
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout rollout status deployment/web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout rollout history deployment/web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout get rs
 ```
 
 Notice that the Deployment creates a new ReplicaSet and gradually scales down the previous one. The `maxUnavailable: 1` and `maxSurge: 1` limits make the trade-off explicit: during the update, at most one desired replica is unavailable and at most one extra replica is created.
@@ -106,17 +106,17 @@ Notice that the Deployment creates a new ReplicaSet and gradually scales down th
 Now deliberately introduce a nonexistent image. This is a controlled exercise; don't use this pattern to test production.
 
 ```bash
-kubectl -n lab-rollout set image deployment/web web=nginx:nonexistent-image
-kubectl -n lab-rollout rollout status deployment/web --timeout=60s
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout set image deployment/web web=nginx:nonexistent-image
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout rollout status deployment/web --timeout=60s
 ```
 
 The command should end with a timeout, since the new Pod won't be able to pull the image. Investigate before fixing it:
 
 ```bash
-kubectl -n lab-rollout get pods
-kubectl -n lab-rollout describe deployment web
-kubectl -n lab-rollout describe pod -l app.kubernetes.io/name=web
-kubectl -n lab-rollout get events --sort-by=.metadata.creationTimestamp
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout get pods
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout describe deployment web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout describe pod -l app.kubernetes.io/name=web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout get events --sort-by=.metadata.creationTimestamp
 ```
 
 Look for messages like `ErrImagePull` or `ImagePullBackOff`. The decision isn't "retry until it works" — it's comparing the current state against the impact and returning to a known revision when the new one isn't progressing.
@@ -124,27 +124,35 @@ Look for messages like `ErrImagePull` or `ImagePullBackOff`. The decision isn't 
 ## 4. Run the rollback
 
 ```bash
-kubectl -n lab-rollout rollout undo deployment/web
-kubectl -n lab-rollout rollout status deployment/web
-kubectl -n lab-rollout rollout history deployment/web
-kubectl -n lab-rollout get pods
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout rollout undo deployment/web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout rollout status deployment/web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout rollout history deployment/web
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" -n lab-rollout get pods
 ```
 
 Expected result: the Deployment returns to the last healthy revision and is back to three ready Pods.
 
 ## 5. Clean up the environment
 
+Confirm that the recorded context still points to your disposable cluster and that you created the namespace in this run.
+
 ```bash
-kubectl delete namespace lab-rollout
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" delete namespace lab-rollout
 ```
 
 Confirm:
 
 ```bash
-kubectl get namespace lab-rollout
+kubectl --context="${LAB_CONTEXT:?Verify and set LAB_CONTEXT first}" get namespace lab-rollout
 ```
 
 The namespace should stop appearing once deletion completes.
+
+Before deleting a local cluster, check the recorded context and list the clusters or profiles again with `kind get clusters` or `minikube profile list`. Confirm the name still identifies the environment you created for this run. If there is any doubt, leave it in place.
+
+- For kind, run `kind delete cluster --name kubernetes-from-scratch`.
+- For Minikube, run `minikube delete -p kfs-lab-rollout`.
+- For Killercoda, end the playground session.
 
 ## Review questions
 
